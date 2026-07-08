@@ -9,7 +9,7 @@ from scipy.stats import norm
 from math import factorial
 
 class MertonSimulator:
-    def __init__( self, S0, r, sigma, lam, mu_J, sigma_J, T, num_steps ):
+    def __init__( self, S0=100.0, r=0.05, sigma=0.20, lam=1.5, mu_J=-0.04, sigma_J=0.08, T=1.0, num_steps=50 ):
         self.S0 = S0
         self.r = r
         self.sigma = sigma
@@ -99,27 +99,44 @@ class MertonSimulator:
         T = self.T
         r = self.r
 
-        # risk neutral lambda adjustment
-        risk_neutral_lam = self.lam / ( 1 + self.k )
-
         price = 0.0
         for n in range( num_terms ):
             poisson_weight = (
-                np.exp( -risk_neutral_lam * T ) * ( risk_neutral_lam * T )**n / factorial( n )
+                np.exp( -self.lam * T ) * ( self.lam * T )**n / factorial( n )
             )
 
-            sigma_n_squared = self.sigma**2 + n * self.sigma_J**2 / T
-            sigma_n = np.sqrt( max( sigma_n_squared, 1e-10 ) )
+            variance = self.sigma**2 * T + n * self.sigma_J**2
+            volatility = np.sqrt( max( variance, 1e-10 ) )
 
-            adjusted_r = ( r - self.lam * self.k ) + n * ( self.mu_J + 0.5 * self.sigma_J**2 ) / T
+            mean = (
+                np.log( S )
+                + ( r - self.lam * self.k - 0.5 * self.sigma**2 ) * T
+                + n * self.mu_J
+            )
 
-            d1 = (
-                np.log(S/K) + (adjusted_r + 0.5 * sigma_n**2) * T
-            ) / (sigma_n * np.sqrt(T))
+            d2 = ( mean - np.log( K ) ) / volatility
+            d1 = d2 + volatility
 
-            d2 = d1 - sigma_n * np.sqrt(T)
+            conditional_price = np.exp( -r * T ) * (
+                np.exp( mean + 0.5 * variance ) * norm.cdf( d1 )
+                - K * norm.cdf( d2 )
+            )
 
-            bs_price = S * norm.cdf(d1) - K * np.exp(-adjusted_r * T) * norm.cdf(d2)
-            price += poisson_weight * bs_price
+            price += poisson_weight * conditional_price
 
-            return price
+        return price
+
+    def black_scholes_delta(self, S, K, tau):
+        """
+
+        :param S: stock price
+        :param K: strike price
+        :param tau: time remaining
+        :return: delta of the BS option
+        """
+        if tau < 1e-8:
+            return 1.0 if S > K else 0.0
+        else:
+            d1 = (np.log(S/K) + (self.r + 0.5 * self.sigma**2) * tau) / (self.sigma * np.sqrt(tau))
+
+            return float(norm.cdf(d1))
