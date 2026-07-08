@@ -87,3 +87,39 @@ class MertonSimulator:
         prices[:,1:] = self.S0 * np.exp(np.cumsum(log_returns, axis=1))
 
         return prices, jump_occurred
+
+    def compute_merton_call_price( self, K, num_terms=50 ):
+        """
+
+        :param K: strike price
+        :param num_terms: number of terms to simulate (50 as default as series converges quickly)
+        :return: price
+        """
+        S = self.S0
+        T = self.T
+        r = self.r
+
+        # risk neutral lambda adjustment
+        risk_neutral_lam = self.lam / ( 1 + self.k )
+
+        price = 0.0
+        for n in range( num_terms ):
+            poisson_weight = (
+                np.exp( -risk_neutral_lam * T ) * ( risk_neutral_lam * T )**n / factorial( n )
+            )
+
+            sigma_n_squared = self.sigma**2 + n * self.sigma_J**2 / T
+            sigma_n = np.sqrt( max( sigma_n_squared, 1e-10 ) )
+
+            adjusted_r = ( r - self.lam * self.k ) + n * ( self.mu_J + 0.5 * self.sigma_J**2 ) / T
+
+            d1 = (
+                np.log(S/K) + (adjusted_r + 0.5 * sigma_n**2) * T
+            ) / (sigma_n * np.sqrt(T))
+
+            d2 = d1 - sigma_n * np.sqrt(T)
+
+            bs_price = S * norm.cdf(d1) - K * np.exp(-adjusted_r * T) * norm.cdf(d2)
+            price += poisson_weight * bs_price
+
+            return price
