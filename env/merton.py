@@ -128,7 +128,8 @@ class MertonSimulator:
 
     def black_scholes_delta(self, S, K, tau):
         """
-
+        This function will compute the delta of a Black-Scholes option to be used as validation and as comparison
+        against the PPO agents.
         :param S: stock price
         :param K: strike price
         :param tau: time remaining

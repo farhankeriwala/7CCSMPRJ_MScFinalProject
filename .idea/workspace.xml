@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="e295592e-ce21-4c94-ab7d-400631609cdd" name="Changes" comment="" />
+    <list default="true" id="e295592e-ce21-4c94-ab7d-400631609cdd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/agent/bs_baseline.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/env/hedging_env.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/evaluation/generate_merton_plots.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_hedging_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/JupyterProject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/JupyterProject.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env/merton.py" beforeDir="false" afterPath="$PROJECT_DIR$/env/merton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/plots.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/plots.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="22" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -17,10 +37,69 @@
     <commands />
     <urls />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4,
-  "fromUser": false
-}]]></component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0002670398109588" />
+      <entry key="MS500" value="1.4328358584307943" />
+      <entry key="S2" value="3.0463665293070505" />
+      <entry key="S5" value="4.758976410804158" />
+      <entry key="S10" value="7.121211972399935" />
+      <entry key="S30" value="14.24138679570144" />
+      <entry key="S60" value="24.0848846708612" />
+      <entry key="M2" value="39.8015684936853" />
+      <entry key="M5" value="60.724337708551865" />
+      <entry key="M10" value="71.89282871563418" />
+      <entry key="M15" value="79.06566012517698" />
+      <entry key="M30" value="107.7105562965118" />
+      <entry key="H1" value="161.20669332438675" />
+      <entry key="H2" value="216.98141556178288" />
+      <entry key="H4" value="258.05895313394757" />
+      <entry key="D1" value="373.4898756207695" />
+      <entry key="W1" value="508.84342573410225" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="1.8967486882837484E-90" />
+      <entry key="MS500" value="1.1500829427899765E-18" />
+      <entry key="S2" value="4.9726354752740724E-5" />
+      <entry key="S5" value="0.03472506364826264" />
+      <entry key="S10" value="0.31977564894621197" />
+      <entry key="S30" value="1.457763457365004" />
+      <entry key="S60" value="2.400502470371762" />
+      <entry key="M2" value="3.492809406008977" />
+      <entry key="M5" value="4.720239967620311" />
+      <entry key="M10" value="5.332460787610658" />
+      <entry key="M15" value="5.771401549131758" />
+      <entry key="M30" value="7.745277223671406" />
+      <entry key="H1" value="11.507540528022535" />
+      <entry key="H2" value="15.424146133315963" />
+      <entry key="H4" value="18.29652111900526" />
+      <entry key="D1" value="24.626140141895814" />
+      <entry key="W1" value="31.15154617654886" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.10821469359644074" />
+      <entry key="MS500" value="0.9809945547560986" />
+      <entry key="S2" value="2.7756954827769964" />
+      <entry key="S5" value="4.578390295227767" />
+      <entry key="S10" value="7.242519516629908" />
+      <entry key="S30" value="15.55569710154527" />
+      <entry key="S60" value="26.37494039354173" />
+      <entry key="M2" value="43.208307008200535" />
+      <entry key="M5" value="65.3929900147569" />
+      <entry key="M10" value="77.19475714925228" />
+      <entry key="M15" value="84.81448997480828" />
+      <entry key="M30" value="115.43974797706746" />
+      <entry key="H1" value="172.70162895697217" />
+      <entry key="H2" value="232.39687624827502" />
+      <entry key="H4" value="276.3502434029766" />
+      <entry key="D1" value="398.11419495739574" />
+      <entry key="W1" value="539.9945151511935" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3GE5FQOyKZDLSrOrfVtZxZ9myGd" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,11 +110,20 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/Users/farhankeriwala/Developer/7CCSMPRJ_MSc_Individual_Project",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -55,6 +143,7 @@
       <option name="presentableId" value="Default" />
       <updated>1783523783107</updated>
       <workItem from="1783523784115" duration="1000" />
+      <workItem from="1783631314104" duration="10989000" />
     </task>
     <servers />
   </component>
