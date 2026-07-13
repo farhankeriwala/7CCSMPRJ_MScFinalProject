@@ -30,7 +30,8 @@ class BlackScholesBaselineAgent:
         intermediate_rewards = []
 
         terminated = False
-        while not terminated:
+        truncated = False
+        while not (terminated or truncated):
             action = self.sel_action(observations)
             observations, reward, terminated, truncated, info = self.env.step(action)
             total_reward += reward

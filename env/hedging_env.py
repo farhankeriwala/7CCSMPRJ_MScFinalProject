@@ -1,7 +1,9 @@
-import numpy as np
 import gymnasium as gym
+import numpy as np
 from gymnasium import spaces
+
 from env.merton import MertonSimulator
+
 
 class HedgingEnv(gym.Env):
     """
@@ -9,7 +11,9 @@ class HedgingEnv(gym.Env):
 
     metadata = {"render_modes": []}
 
-    def __init__(self, S0: float = 100.0, K:float = 100.0, B: float = 75.0, r:float = 0.05, sigma:float = 0.20, lam: float = 1.5, mu_J: float = -0.04, sigma_J: float = 0.08, T: float = 1.0,num_steps: int = 50, transaction_cost: float =0.001, rho: float = 0.5,lam_override: float = None):
+    def __init__(self, S0: float = 100.0, K: float = 100.0, B: float = 75.0, r: float = 0.05, sigma: float = 0.20,
+                 lam: float = 1.5, mu_J: float = -0.04, sigma_J: float = 0.08, T: float = 1.0, num_steps: int = 50,
+                 transaction_cost: float = 0.001, rho: float = 0.5, lam_override: float = None):
         super().__init__()
 
         self.S0 = S0
@@ -34,15 +38,15 @@ class HedgingEnv(gym.Env):
 
         # define the observation space (S/S0, (T-t)/T, prev_delta, z)
         self.observation_space = spaces.Box(
-            low = np.array([0.0, 0.0,0.0, -3.0], dtype=np.float32),
-            high = np.array([5.0, 1.0, 1.0, 3.0], dtype=np.float32),
+            low=np.array([0.0, 0.0, 0.0, -3.0], dtype=np.float32),
+            high=np.array([5.0, 1.0, 1.0, 3.0], dtype=np.float32),
             dtype=np.float32
         )
 
         # define the action space [delta_hedge, delta_equity]
         self.action_space = spaces.Box(
-            low = np.array([0.0, 0.0], dtype=np.float32),
-            high = np.array([1.0, 1.0], dtype=np.float32),
+            low=np.array([0.0, 0.0], dtype=np.float32),
+            high=np.array([1.0, 1.0], dtype=np.float32),
             dtype=np.float32
         )
 
@@ -55,22 +59,29 @@ class HedgingEnv(gym.Env):
     def generate_sentiment_signal(self, prices: np.ndarray) -> np.ndarray:
         """
         This function generates a signal based on the jump arrivals which is detected via a large log return threshold.
-        :param prices:
-        :return:
+        :param prices: the price path
+        :return: a clipped sentiment signal
         """
 
+        # compute the log returns
         n = len(prices)
         log_returns = np.zeros(n)
         log_returns[1:] = np.log(prices[1:] / prices[:-1])
 
-        jump_threshold = 2.0 *  self.sigma * np.sqrt(self.dt)
+        # compute the jump arrivals
+        jump_threshold = 2.0 * self.sigma * np.sqrt(self.dt)
         jump_flags = (np.abs(log_returns) > jump_threshold).astype(int)
 
+        # sample a noise signal
         noise = np.random.uniform(-1.0, 1.0, n)
 
+        # informative signal is 1 if the jump occurred and -1 otherwise
         informative = jump_flags * 2.0 - 1.0
 
+        # combine the informative and noise signals
         signal = self.rho * informative + (1.0 - self.rho) * noise
+
+        # return a clipped signal
         return np.clip(signal, -1.0, 1.0).astype(np.float32)
 
     def reset(self, seed=None, options=None):
@@ -101,7 +112,7 @@ class HedgingEnv(gym.Env):
 
         # get the prices and compute the price change for the pnl
         S_t = self.prices[self.t]
-        S_tp1 = self.prices[self.t+1]
+        S_tp1 = self.prices[self.t + 1]
         dS = S_tp1 - S_t
 
         pnl = delta_hedge * dS - delta_equity * S_t
@@ -109,7 +120,7 @@ class HedgingEnv(gym.Env):
         transaction_cost = self.transaction_cost * np.sum(np.abs(action - self.prev_delta)) * S_t
         reward = pnl - transaction_cost
 
-        #update interanl state
+        # update interanl state
         self.t += 1
         self.prev_delta = action
 
@@ -117,14 +128,14 @@ class HedgingEnv(gym.Env):
         if S_tp1 <= self.B:
             self.knocked_out = True
 
-        terminated = (self.t==self.num_steps)
+        terminated = (self.t == self.num_steps)
         truncated = False
 
         if terminated:
             reward += self._terminal_adjustment(S_tp1)
 
         observations = self._get_observations()
-        info ={
+        info = {
             "S_tp1": S_tp1,
             "knocked_out": self.knocked_out,
             "pnl": pnl,
@@ -134,11 +145,10 @@ class HedgingEnv(gym.Env):
         return observations, reward, terminated, truncated, info
 
     def _get_observations(self) -> np.ndarray:
-        # TODO: complete
 
         # get the current prices, time remaining and sentiment signal
         S_t = self.prices[self.t]
-        time_remaining = (self.T - self.t*self.dt)/self.T
+        time_remaining = (self.T - self.t * self.dt) / self.T
         z_t = self.sentiment[self.t]
 
         # get the current observations
@@ -146,21 +156,19 @@ class HedgingEnv(gym.Env):
             S_t / self.S0, time_remaining, self.prev_delta[0], z_t
         ], dtype=np.float32)
 
+        return observations
+
     def _terminal_adjustment(self, S_T: float) -> float:
-        # function to adjust the reward for the terminal state for the option payoff
+        """
+        function to adjust the reward for the terminal state for the option payoff
+        :param S_T: terminal stock price
+        :return: adjusted reward
+        """
+
+        # check if option was already knocked out
         if self.knocked_out:
             return 0.0
 
         else:
-            # minus as we are short the barrier option
+            # negate as we are short the barrier option
             return -max(S_T - self.K, 0.0)
-
-
-
-
-
-
-
-
-
-

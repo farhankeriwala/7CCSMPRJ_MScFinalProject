@@ -170,8 +170,7 @@ def plot_terminal_distribution(n_paths=50_000, seed=42):
     )
 
     fig.suptitle(
-        "Fat Tails Under Jump-Diffusion — "
-        "Motivating CVaR-Targeted Hedging",
+        "Fat Tails Under Jump-Diffusion Dynamics",
         fontsize=13, fontweight="bold"
     )
     plt.tight_layout()
@@ -238,17 +237,16 @@ def plot_mc_convergence(seed=42):
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
-    # --- Left: MC price convergence ---
     ax = axes[0]
     ax.semilogx(checkpoints, mc_prices, color="steelblue",
                 linewidth=1.5, label="Monte Carlo estimate")
     ax.axhline(analytical, color="red", linestyle="--",
-               linewidth=1.5, label=f"Analytical: £{analytical:.4f}")
+               linewidth=1.5, label=f"Analytical: {analytical:.4f}")
     ax.fill_between(checkpoints,
                     analytical - 0.5, analytical + 0.5,
                     alpha=0.1, color="red")
     ax.set_xlabel("Number of Simulated Paths")
-    ax.set_ylabel("European Call Price (£)")
+    ax.set_ylabel("European Call Price")
     ax.set_title("Monte Carlo Price Convergence")
     ax.legend(fontsize=9)
 
@@ -262,25 +260,24 @@ def plot_mc_convergence(seed=42):
     ax.loglog(checkpoints, theoretical, color="red", linestyle="--",
               linewidth=1.0, label=r"$O(1/\sqrt{n})$ reference")
     ax.set_xlabel("Number of Simulated Paths")
-    ax.set_ylabel("Absolute Error (£)")
+    ax.set_ylabel("Absolute Error")
     ax.set_title("Convergence Rate")
     ax.legend(fontsize=9)
 
     fig.suptitle(
-        "Simulator Validation: Monte Carlo Converges to "
-        "Analytical Merton Price",
+        "Simulator Validation with Monte Carlo",
         fontsize=13, fontweight="bold"
     )
     plt.tight_layout()
-    path = os.path.join(PLOT_DIR, "mc_convergence.png")
+    path = os.path.join(PLOT_DIR, "simulator_validation_with_mc.png")
     plt.savefig(path, dpi=150, bbox_inches="tight")
     print(f"Saved: {path}")
     plt.show()
 
     print(f"\nFinal MC price ({n_total:,} paths): "
-          f"£{mc_prices[-1]:.4f}")
-    print(f"Analytical price:               £{analytical:.4f}")
-    print(f"Final error:                    £{errors[-1]:.4f}")
+          f"{mc_prices[-1]:.4f}")
+    print(f"Analytical price: {analytical:.4f}")
+    print(f"Final error: {errors[-1]:.4f}")
 
 
 # =============================================================
@@ -364,12 +361,10 @@ def plot_jump_impact_on_hedging(n_paths=10_000, seed=42):
     ax.axvline(cvar_merton, color="darkred", linestyle="--",
                linewidth=2, label=f"CVaR 5% Merton: {cvar_merton:.2f}")
 
-    ax.set_xlabel("Delta-Hedged Terminal P&L")
+    ax.set_xlabel("Delta-Hedging Terminal P&L")
     ax.set_ylabel("Density")
     ax.set_title(
-        "Black-Scholes Delta Hedge P&L: GBM vs Merton\n"
-        # "Jump dynamics cause heavier left tail — "
-        # "motivating RL-based hedging"
+        "Black-Scholes Delta Hedge P&L: GBM vs Merton"
     )
     ax.legend(fontsize=9)
     plt.tight_layout()
