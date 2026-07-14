@@ -157,19 +157,23 @@ def main():
     # ------------------------------------------------------------------
     # Quick summary statistics at end of training
     # ------------------------------------------------------------------
-    returns_arr    = np.array(returns)
-    final_returns  = returns_arr[-10_000:]   # last 10k episodes
-    threshold      = np.quantile(final_returns, 0.05)
-    tail           = final_returns[final_returns <= threshold]
-    final_cvar     = float(np.mean(tail))
+    returns_arr = np.array(returns)
 
-    print("\n" + "="*60)
-    print("  Phase 2 Training Complete — Final 10,000 Episodes")
-    print("="*60)
+    # Safe slice — use all returns if fewer than 10k episodes completed
+    n_final = min(10_000, len(returns_arr))
+    final_returns = returns_arr[-n_final:]
+
+    threshold = np.quantile(final_returns, 0.05)
+    tail = final_returns[final_returns <= threshold]
+    final_cvar = float(np.mean(tail))
+
+    print("\n" + "=" * 60)
+    print(f"  Phase 2 Training Complete — Final {n_final:,} Episodes")
+    print("=" * 60)
     print(f"  Mean P&L:   {np.mean(final_returns):>8.4f}  (BS: -9.00)")
     print(f"  Std P&L:    {np.std(final_returns):>8.4f}  (BS:  2.49)")
     print(f"  CVaR 5%:    {final_cvar:>8.4f}  (BS: -15.43)")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":
