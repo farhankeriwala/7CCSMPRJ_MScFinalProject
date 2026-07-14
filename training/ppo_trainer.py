@@ -13,11 +13,11 @@ class PPOTrainer:
     def __init__(self,
                  env: VecHedgingEnv,
                  net: ActorCritic,
-                 lr:float = 3e-4,
+                 lr:float = 1e-4,
                  gamma: float = 1.0,
                  gae_lambda: float = 0.95,
                  epsilon_clip:float = 0.2,
-                 c_val: float = 0.5,
+                 c_val: float = 1.0,
                  c_entropy: float = 0.001,
                  num_epochs:int = 10,
                  batch_size: int = 64,
@@ -166,6 +166,7 @@ class PPOTrainer:
                 mb_log_probs = log_probs_flat[mb_i]
                 mb_advantages = advantages_flat[mb_i]
                 mb_returns = returns_flat[mb_i]
+                mb_returns = (mb_returns - mb_returns.mean()) / (mb_returns.std() + 1e-8)
 
                 # evaluate actions under current pi
                 _, new_log_probs, entropy, new_vals = self.net.get_action_and_value(mb_observations, action=mb_actions)
