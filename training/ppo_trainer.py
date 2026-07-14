@@ -115,18 +115,18 @@ class PPOTrainer:
                 self.buffer_rewards[step] = rewards
                 self.buffer_dones[step] = dones
 
-                # Debug — print diagnostics on first step of first rollout only
-                if step == 0:
-                    print(f"\n--- Rollout Debug (step 0) ---")
-                    print(f"Action mean:  {action.mean().item():.4f}")
-                    print(f"Action std:   {action.std().item():.4f}")
-                    print(f"Action min:   {action.min().item():.4f}")
-                    print(f"Action max:   {action.max().item():.4f}")
-                    print(f"Reward mean:  {rewards.mean().item():.4f}")
-                    print(f"Reward std:   {rewards.std().item():.4f}")
-                    print(f"Value mean:   {val.mean().item():.4f}")
-                    print(f"Log prob mean:{log_prob.mean().item():.4f}")
-                    print(f"------------------------------\n")
+                # # Debug — print diagnostics on first step of first rollout only
+                # if step == 0:
+                #     print(f"\n--- Rollout Debug (step 0) ---")
+                #     print(f"Action mean:  {action.mean().item():.4f}")
+                #     print(f"Action std:   {action.std().item():.4f}")
+                #     print(f"Action min:   {action.min().item():.4f}")
+                #     print(f"Action max:   {action.max().item():.4f}")
+                #     print(f"Reward mean:  {rewards.mean().item():.4f}")
+                #     print(f"Reward std:   {rewards.std().item():.4f}")
+                #     print(f"Value mean:   {val.mean().item():.4f}")
+                #     print(f"Log prob mean:{log_prob.mean().item():.4f}")
+                #     print(f"------------------------------\n")
 
                 ep_buffer += rewards
 
@@ -225,7 +225,7 @@ class PPOTrainer:
             update_count += 1
 
             # log updates
-            if update_count % 5 == 0:
+            if update_count % 2 == 0:
                 recent_returns = all_returns[-1000:]  # last 1000 episodes
                 mean_return = np.mean(recent_returns)
                 std_return = np.std(recent_returns)
