@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e295592e-ce21-4c94-ab7d-400631609cdd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/tests/test_ppo_trainer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/training/ppo_trainer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/training/train_ppo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/agent/actor_critic.py" beforeDir="false" afterPath="$PROJECT_DIR$/agent/actor_critic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_actor_critic.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_actor_critic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/training/ppo_trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/training/ppo_trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/training/train_ppo.py" beforeDir="false" afterPath="$PROJECT_DIR$/training/train_ppo.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,7 +139,7 @@
       <option name="presentableId" value="Default" />
       <updated>1783523783107</updated>
       <workItem from="1783523784115" duration="1000" />
-      <workItem from="1783631314104" duration="33269000" />
+      <workItem from="1783631314104" duration="34598000" />
     </task>
     <servers />
   </component>

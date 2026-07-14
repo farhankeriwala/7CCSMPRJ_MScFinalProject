@@ -37,7 +37,7 @@ class ActorCritic(nn.Module):
         nn.init.zeros_(self.actor_mean.bias)
 
         nn.init.orthogonal_(self.actor_log_std.weight, gain=0.01)
-        nn.init.zeros_(self.actor_log_std.bias)
+        nn.init.constant_(self.actor_log_std.bias, -1.0)
 
         # standard critic gain
         nn.init.orthogonal_(self.critic_head.weight, gain=1.0)
@@ -76,7 +76,7 @@ class ActorCritic(nn.Module):
 
         mean = torch.sigmoid(self.actor_mean(trunk_out))
 
-        log_std = self.actor_log_std(trunk_out).clamp(-3.0, 3.0)
+        log_std = self.actor_log_std(trunk_out).clamp(-2.0, -0.7)
         std = log_std.exp()
 
         dist = Normal(mean, std)

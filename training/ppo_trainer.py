@@ -99,16 +99,13 @@ class PPOTrainer:
         with torch.no_grad():
             for step in range(self.rollout_steps):
 
-                # hold the current observation
                 self.buffer_observations[step] = observations
 
-                # get the action and value estimate
-                action, log_prob, _, val= self.net.get_action_and_value(observations)
+                action, log_prob, _, val = self.net.get_action_and_value(observations)
                 self.buffer_actions[step] = action
                 self.buffer_log_probs[step] = log_prob
                 self.buffer_vals[step] = val
 
-                # simultanriosly compute N steps of the environment
                 observations_np, rewards_np, dones_np, _ = self.env.step(action.cpu().numpy())
 
                 rewards = torch.tensor(rewards_np, dtype=torch.float32).to(self.device)
@@ -117,6 +114,19 @@ class PPOTrainer:
 
                 self.buffer_rewards[step] = rewards
                 self.buffer_dones[step] = dones
+
+                # Debug — print diagnostics on first step of first rollout only
+                if step == 0:
+                    print(f"\n--- Rollout Debug (step 0) ---")
+                    print(f"Action mean:  {action.mean().item():.4f}")
+                    print(f"Action std:   {action.std().item():.4f}")
+                    print(f"Action min:   {action.min().item():.4f}")
+                    print(f"Action max:   {action.max().item():.4f}")
+                    print(f"Reward mean:  {rewards.mean().item():.4f}")
+                    print(f"Reward std:   {rewards.std().item():.4f}")
+                    print(f"Value mean:   {val.mean().item():.4f}")
+                    print(f"Log prob mean:{log_prob.mean().item():.4f}")
+                    print(f"------------------------------\n")
 
                 ep_buffer += rewards
 

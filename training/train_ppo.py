@@ -139,7 +139,7 @@ def main():
     print(f"  Device:          {trainer.device}")
     print("="*60 + "\n")
 
-    returns = trainer.train(total_ep=500000)
+    returns = trainer.train(total_ep=5000)
 
     # ------------------------------------------------------------------
     # Save model weights and training returns
