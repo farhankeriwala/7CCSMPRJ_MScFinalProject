@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.distributions import Beta
+from torch.distributions import Normal
 
 class ActorCritic(nn.Module):
     def __init__(self, observation_dim: int = 4, action_dim: int = 2, hidden_dim:int = 64):
@@ -20,10 +20,9 @@ class ActorCritic(nn.Module):
             nn.Tanh(),
         )
 
-        # actor head outputs 4 values per dimension
-        self.actor_head = nn.Linear(hidden_dim, action_dim*2)
-        # scalar state value
+        self.actor_mean = nn.Linear(hidden_dim, action_dim)  # outputs mean in unconstrained space
         self.critic_head = nn.Linear(hidden_dim, 1)
+        self.actor_log_std = nn.Linear(hidden_dim, action_dim)  # outputs log std
 
         self._init_weights()
 
@@ -34,30 +33,17 @@ class ActorCritic(nn.Module):
                 nn.init.zeros_(l.bias)
 
         # a small actor gain to make the initial actions more exploratory
-        nn.init.orthogonal_(self.actor_head.weight, gain=0.01)
-        nn.init.zeros_(self.actor_head.bias)
+        nn.init.orthogonal_(self.actor_mean.weight, gain=0.01)
+        nn.init.zeros_(self.actor_mean.bias)
+
+        nn.init.orthogonal_(self.actor_log_std.weight, gain=0.01)
+        nn.init.zeros_(self.actor_log_std.bias)
 
         # standard critic gain
         nn.init.orthogonal_(self.critic_head.weight, gain=1.0)
         nn.init.zeros_(self.critic_head.bias)
 
-    def _get_beta_params(self, trunk_out: torch.Tensor):
-        """
-        A function to get the beta parameters from the actor head
-        :param trunk_out: the output of the trunk
-        :return: the alpha and beta parameters
-        """
-
-        # split into alpha and beta parameters for each action dimension
-        raw = self.actor_head(trunk_out)
-        raw_alpha, raw_beta = raw.chunk(2, dim=-1)
-
-        alpha = F.softplus(raw_alpha) + 1.0
-        beta = F.softplus(raw_beta) + 1.0
-
-        return alpha, beta
-
-    def get_val(self, observations: torch.Tensor):
+    def get_value(self, observations: torch.Tensor):
         """
 
         :param observations: the observations to get the value for
@@ -88,23 +74,18 @@ class ActorCritic(nn.Module):
 
         trunk_out = self.trunk(observations)
 
-        # get beta and alpha
-        alpha, beta = self._get_beta_params(trunk_out)
+        mean = torch.sigmoid(self.actor_mean(trunk_out))
 
-        # contruct the beta distribution
-        dist = Beta(alpha, beta)
+        log_std = self.actor_log_std(trunk_out).clamp(-3.0, 3.0)
+        std = log_std.exp()
 
-        if action is None:
-            # if there is no action, sample from the distribution
-            action = dist.sample()
+        dist = Normal(mean, std)
 
-        # get the sum of the log probabilities across the action dimensions
+        if action == None:
+            action = dist.sample().clamp(0.0, 1.0)
+
         log_prob = dist.log_prob(action).sum(dim=-1)
-
-        # sum entropy across the action dimensions
         entropy = dist.entropy().sum(dim=-1)
+        value = self.critic_head(trunk_out).squeeze(-1)
 
-        # compute the critic
-        val = self.critic_head(trunk_out).squeeze(-1)
-
-        return action, log_prob, entropy, val
+        return action, log_prob, entropy, value

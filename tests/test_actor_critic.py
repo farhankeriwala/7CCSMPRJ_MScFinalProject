@@ -39,7 +39,7 @@ def test_forward_shape(net):
 
 def test_get_value_shape(net):
     obs   = random_obs()
-    value = net.get_val(obs)
+    value = net.get_value(obs)
 
     # get_value() squeezes to (batch,)
     assert value.shape == (BATCH,), f"Expected ({BATCH},), got {value.shape}"
