@@ -158,7 +158,7 @@ def run_phase3(rho: float = 0.5):
             gae_lambda    = 0.95,
             epsilon_clip  = 0.2,
             c_val         = 1.0,
-            c_entropy     = 0.01,
+            c_entropy     = 0.003,
             num_epochs    = 10,
             batch_size    = 64,
             rollout_steps = 2048,
@@ -180,7 +180,7 @@ def run_phase3(rho: float = 0.5):
     # Stage 1 — λ=0.5
     print("\nStage 1: λ=0.5 (easy)")
     env.set_lam_override(0.5)
-    returns_1 = trainer.train(total_ep=150_000, stage_name="λ=0.5")
+    returns_1 = trainer.train(total_ep=200_000, stage_name="λ=0.5")
     all_returns.extend(returns_1)
     stage_boundaries.append(len(all_returns))
 
@@ -191,7 +191,7 @@ def run_phase3(rho: float = 0.5):
     # Stage 2 — λ=1.0
     print("\nStage 2: λ=1.0 (medium)")
     env.set_lam_override(1.0)
-    returns_2 = trainer.train(total_ep=150_000, stage_name="λ=1.0")
+    returns_2 = trainer.train(total_ep=200_000, stage_name="λ=1.0")
     all_returns.extend(returns_2)
     stage_boundaries.append(len(all_returns))
 
@@ -202,7 +202,7 @@ def run_phase3(rho: float = 0.5):
     # Stage 3 — λ=1.5 (target)
     print("\nStage 3: λ=1.5 (target)")
     env.set_lam_override(1.5)
-    returns_3 = trainer.train(total_ep=150_000, stage_name="λ=1.5")
+    returns_3 = trainer.train(total_ep=200_000, stage_name="λ=1.5")
     all_returns.extend(returns_3)
 
     # ------------------------------------------------------------------
