@@ -34,8 +34,17 @@ class CvarPPOTrainer:
         print(f'---------- Using device: {self.device} ----------')
 
         self.net.to(self.device)
-        self.optimizer = Adam(self.net.parameters(), lr=self.lr)
-        N = env.N
+        self.optimizer_actor = Adam(
+            list(net.trunk.parameters()) +
+            list(net.actor_mean.parameters()) +
+            list(net.actor_log_std.parameters()),
+            lr=lr,  # 3e-5 — slow stable policy updates
+        )
+
+        self.optimizer_critic = Adam(
+            net.critic_head.parameters(),
+            lr=lr * 10,  # 3e-4 — faster critic learning
+        )        N = env.N
         observation_dim = env.observations_dim
         action_dim = env.actions_dim
         N_num_quantiles = net.num_quantiles
@@ -158,11 +167,13 @@ class CvarPPOTrainer:
 
                 loss = policy_loss + self.c_val * value_loss - self.c_entropy * entropy_loss
 
-                self.optimizer.zero_grad()
+                self.optimizer_actor.zero_grad()
+                self.optimizer_critic.zero_grad()
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.net.parameters(), 0.5)
+                torch.nn.utils.clip_grad_norm_(self.net.parameters(), max_norm=0.5)
+                self.optimizer_actor.step()
+                self.optimizer_critic.step()
 
-                self.optimizer.step()
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())
                 entropy_losses.append(entropy_loss.item())
