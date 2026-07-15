@@ -115,7 +115,7 @@ class HedgingEnv(gym.Env):
         S_tp1 = self.prices[self.t + 1]
         dS = S_tp1 - S_t
 
-        pnl = delta_hedge * dS - delta_equity * S_t
+        pnl = delta_hedge * dS - delta_equity * dS
 
         transaction_cost = self.transaction_cost * np.sum(np.abs(action - self.prev_delta)) * S_t
         reward = pnl - transaction_cost

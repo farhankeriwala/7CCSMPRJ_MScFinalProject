@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from env.hedging_env import HedgingEnv
 from agent.actor_critic import ActorCritic
+from env.vec_hedging_env import VecHedgingEnv
 
 
 def compute_cvar(pnl: np.ndarray, alpha: float = 0.05) -> float:
@@ -34,7 +35,7 @@ def evaluate_ppo(
         sigma_J  = 0.08,
         T        = 1.0,
         num_steps = 50,
-        tc       = 0.001,
+        transaction_cost       = 0.001,
         rho      = 0.5,
     )
 
@@ -55,10 +56,16 @@ def evaluate_ppo(
 
         while not terminated:
             obs_tensor = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)
-
             with torch.no_grad():
-                # Use mean action for evaluation — deterministic policy
-                action, _, _, _ = net.get_action_and_value(obs_tensor)
+                trunk_out = net.trunk(obs_tensor)
+                action = torch.sigmoid(net.actor_mean(trunk_out))
+                action = action.clamp(0.0, 1.0)
+
+            # Debug first episode first step only
+            if ep == 0:
+                print(f"obs_tensor: {obs_tensor}")
+                print(f"action: {action}")
+                print(f"S0: {env.S0}, K: {env.K}, B: {env.B}")
 
             action_np = action.squeeze(0).cpu().numpy()
             obs, reward, terminated, truncated, info = env.step(action_np)
@@ -155,12 +162,22 @@ def print_comparison(bs_metrics: dict, ppo_metrics: dict):
 if __name__ == "__main__":
     # Load BS baseline P&L from Phase 1
     # Re-run baseline evaluation to get matched P&L array
-    from evaluation.evaluate_baseline import evaluate_baseline
+    from evaluation.evaluate_baseline import eval_baseline_agent as evaluate_baseline
     print("Running BS baseline evaluation for comparison...")
-    bs_pnl, bs_metrics = evaluate_baseline(num_episodes=10_000, seed=42)
+    bs_pnl, bs_metrics = evaluate_baseline(num_ep=10_000, seed=42)
 
+    # Map baseline keys to standard names used by print_comparison
+    bs_metrics = {
+        "mean_pnl":      bs_metrics["avg_pnl"],
+        "std_pnl":       bs_metrics["std_pnl"],
+        "var_05":        bs_metrics["var_5"],
+        "cvar_05":       bs_metrics["cvar_5"],
+        "min_pnl":       bs_metrics["min_pnl"],
+        "max_pnl":       bs_metrics["max_pnl"],
+        "knockout_rate": bs_metrics["knock_out_rate"] / 100,  # convert % back to fraction
+    }
     # Evaluate PPO agent
-    print("\nRunning PPO agent evaluation...")
+    print("\n Running PPO agent evaluation...")
     ppo_pnl, ppo_metrics = evaluate_ppo(
         model_path   = "results/ppo_phase2.pt",
         num_episodes = 10_000,
