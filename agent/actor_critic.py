@@ -19,10 +19,11 @@ class ActorCritic(nn.Module):
             nn.Linear(hidden_dim, hidden_dim),
             nn.Tanh(),
         )
-
-        self.actor_mean = nn.Linear(hidden_dim, action_dim)  # outputs mean in unconstrained space
+        # outputs mean in unconstrained space
+        self.actor_mean = nn.Linear(hidden_dim, action_dim)
         self.critic_head = nn.Linear(hidden_dim, 1)
-        self.actor_log_std = nn.Linear(hidden_dim, action_dim)  # outputs log std
+        # outputs log std
+        self.actor_log_std = nn.Linear(hidden_dim, action_dim)
 
         self._init_weights()
 
@@ -66,7 +67,7 @@ class ActorCritic(nn.Module):
 
     def get_action_and_value(self, observations: torch.Tensor, action:torch.Tensor = None):
         """
-
+        this function will return the action, log probability, entropy and value estimate for the given observations
         :param observations: the observations to get the action and value for
         :param action: the action to get the log probability for
         :return: the action, log probability, entropy and value estimate

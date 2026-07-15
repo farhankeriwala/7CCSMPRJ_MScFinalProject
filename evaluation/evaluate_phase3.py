@@ -206,5 +206,60 @@ if __name__ == "__main__":
         "max_pnl":       bs_raw_metrics["max_pnl"],
         "knockout_rate": bs_raw_metrics["knock_out_rate"] / 100,
     }
+# ------------------------------------------------------------------
+    # Phase 2 PPO — load saved array
+    # ------------------------------------------------------------------
+    print("Loading Phase 2 PPO results...")
+    ppo_pnl = np.load(ppo_pnl_path)
+    ppo_metrics = {
+        "mean_pnl":      float(np.mean(ppo_pnl)),
+        "std_pnl":       float(np.std(ppo_pnl)),
+        "var_05":        float(np.quantile(ppo_pnl, 0.05)),
+        "cvar_05":       compute_cvar(ppo_pnl),
+        "min_pnl":       float(np.min(ppo_pnl)),
+        "max_pnl":       float(np.max(ppo_pnl)),
+        "knockout_rate": 0.1514,
+    }
 
-    # ---------------------------
+    # ------------------------------------------------------------------
+    # Phase 3 CVaR-PPO
+    # ------------------------------------------------------------------
+    print(f"\nEvaluating Phase 3 agent (ρ={rho})...")
+    phase3_pnl, phase3_metrics = evaluate_phase3_agent(
+        model_path   = model_path,
+        num_episodes = 10_000,
+        seed         = 42,
+        rho          = rho,
+    )
+
+    # Save arrays
+    np.save(f"results/phase3_pnl_rho{rho_str}.npy", phase3_pnl)
+    np.save("results/bs_baseline_pnl.npy", bs_pnl)
+
+    # ------------------------------------------------------------------
+    # Results
+    # ------------------------------------------------------------------
+    print_three_way_comparison(bs_metrics, ppo_metrics, phase3_metrics, rho)
+
+    plot_three_way_comparison(
+        bs_pnl, ppo_pnl, phase3_pnl,
+        bs_metrics, ppo_metrics, phase3_metrics,
+        rho,
+        save_path=f"plots/phase3_comparison_rho{rho_str}.png",
+    )
+
+    # ------------------------------------------------------------------
+    # Wilcoxon test: Phase 3 vs Phase 2
+    # ------------------------------------------------------------------
+    from scipy import stats
+    stat, p_two  = stats.wilcoxon(ppo_pnl, phase3_pnl, alternative="two-sided")
+    _, p_better  = stats.wilcoxon(ppo_pnl, phase3_pnl, alternative="less")
+
+    print(f"Wilcoxon Phase3 vs Phase2:")
+    print(f"  W={stat:.0f}, p(two-sided)={p_two:.6f}, "
+          f"p(Phase3 better)={p_better:.6f}")
+
+    if p_better < 0.05:
+        print("  Phase 3 is significantly BETTER than Phase 2 (p < 0.05)")
+    else:
+        print("  No significant improvement over Phase 2 detected")

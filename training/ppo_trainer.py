@@ -140,6 +140,12 @@ class PPOTrainer:
         return observations, last_val, ep_returns
 
     def _ppo_update(self, advantages: torch.Tensor, returns: torch.Tensor):
+        """
+        this function will update the actor-critic network using PPO
+        :param advantages:
+        :param returns:
+        :return: metrics of the update
+        """
         observations_flat = self.buffer_observations.view(-1, self.env.observations_dim)
         actions_flat = self.buffer_actions.view(-1, self.env.actions_dim)
         log_probs_flat = self.buffer_log_probs.view(-1)
