@@ -209,3 +209,52 @@ def test_cvar_advantage_in_update(trainer):
     assert torch.any(adv > 0), "No positive advantages — policy has no gradient signal"
     assert torch.any(adv < 0), "No negative advantages — tail risk not being penalised"
     assert torch.all(torch.isfinite(adv)), "Non-finite CVaR advantages"
+
+
+# ------------------------------------------------------------------
+# Test 8 — PPO update runs ALL epochs/minibatches, not just one
+# ------------------------------------------------------------------
+
+def test_ppo_update_runs_all_minibatches(trainer, monkeypatch):
+    """
+    Regression test: _ppo_update must iterate over every epoch and every
+    minibatch before returning. A previous bug had the `return` statement
+    indented inside the minibatch loop, so the optimiser only ever took a
+    single gradient step per rollout (using one 32-sample minibatch out of
+    thousands of collected transitions), starving the network of gradient
+    signal and causing CVaR to plateau early in training.
+
+    This test counts how many times the optimiser step is actually invoked
+    and checks it matches num_epochs * ceil(total_samples / batch_size).
+    """
+    obs_np = trainer.env.reset()
+    obs    = torch.tensor(obs_np, dtype=torch.float32).to(trainer.device)
+
+    obs, last_value, _ = trainer._collect_rollout(obs)
+    returns = trainer._compute_returns(
+        trainer.buffer_rewards,
+        trainer.buffer_dones,
+        last_value,
+    )
+
+    total_samples = trainer.rollout_steps * trainer.env.N
+    expected_minibatches_per_epoch = -(-total_samples // trainer.batch_size)  # ceil div
+    expected_total_steps = trainer.num_epochs * expected_minibatches_per_epoch
+
+    step_count = 0
+    real_step = trainer.optimizer.step
+
+    def counting_step(*args, **kwargs):
+        nonlocal step_count
+        step_count += 1
+        return real_step(*args, **kwargs)
+
+    monkeypatch.setattr(trainer.optimizer, "step", counting_step)
+
+    trainer._ppo_update(returns)
+
+    assert step_count == expected_total_steps, (
+        f"Expected {expected_total_steps} optimiser steps "
+        f"({trainer.num_epochs} epochs x {expected_minibatches_per_epoch} minibatches), "
+        f"got {step_count}. _ppo_update is not processing the full rollout buffer."
+    )

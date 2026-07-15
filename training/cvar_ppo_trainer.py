@@ -167,11 +167,11 @@ class CvarPPOTrainer:
                 value_losses.append(value_loss.item())
                 entropy_losses.append(entropy_loss.item())
 
-                return {
-                    "policy_loss": np.mean(policy_losses),
-                    "value_loss": np.mean(value_losses),
-                    "entropy": np.mean(entropy_losses),
-                }
+        return {
+            "policy_loss": np.mean(policy_losses),
+            "value_loss": np.mean(value_losses),
+            "entropy": np.mean(entropy_losses),
+        }
 
     def train(self, total_ep: int = 150000, stage_name: str = "lambda=1.5"):
         """
