@@ -81,7 +81,7 @@ def quantile_huber_loss(
 def cvar_advantage(
     returns: torch.Tensor,     # (batch,)   GAE returns R_t
     quantiles: torch.Tensor,   # (batch, N) quantile estimates theta_i(s_t)
-    n_tail: int,               # number of tail quantiles = floor(alpha * N)
+    num_tail: int,               # number of tail quantiles = floor(alpha * N)
 ) -> torch.Tensor:
     """
     CVaR advantage for Phase 3 policy gradient.
@@ -111,8 +111,8 @@ def cvar_advantage(
     # Sort quantiles ascending — lowest = worst outcomes = left tail
     sorted_q, _ = torch.sort(quantiles, dim=-1)   # (batch, N)
 
-    # CVaR = mean of n_tail lowest quantiles
-    cvar = sorted_q[:, :n_tail].mean(dim=-1)       # (batch,)
+    # CVaR = mean of num_tail lowest quantiles
+    cvar = sorted_q[:, :num_tail].mean(dim=-1)       # (batch,)
 
     # Advantage = return - CVaR baseline
     # Positive when return > CVaR (good outcome relative to tail)
