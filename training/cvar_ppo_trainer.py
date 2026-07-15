@@ -6,7 +6,7 @@ from env.vec_hedging_env import VecHedgingEnv
 from training.losses import quantile_huber_loss, cvar_advantage
 
 class CvarPPOTrainer:
-    def __init__(self, env: VecHedgingEnv, net:DistributionalActorCritic, lr: float = 1e-4, gamma: float = 1.0, gae_lambda : float = 0.95, epsilon_clip: float = 0.2, c_val:float = 1.0, c_entropy:float = 0.01, num_epochs: int = 10, batch_size:int = 64,
+    def __init__(self, env: VecHedgingEnv, net:DistributionalActorCritic, lr: float = 1e-4, gamma: float = 1.0, gae_lambda : float = 0.95, epsilon_clip: float = 0.2, c_val:float = 1.0, c_entropy:float = 0.001, num_epochs: int = 10, batch_size:int = 64,
                  rollout_steps:int = 2048, kappa:float  = 1.0, device:str = None):
 
         self.env = env
