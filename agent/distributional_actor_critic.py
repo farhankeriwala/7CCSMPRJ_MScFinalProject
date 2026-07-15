@@ -5,7 +5,7 @@ from torch.distributions import Normal
 
 class DistributionalActorCritic(nn.Module):
     def __init__(self, observation_dim: int = 4, action_dim: int = 2, hidden_dim: int = 64, num_quantiles: int = 32,
-                 alpha_cvar: float = 0.10):
+                 alpha_cvar: float = 0.05):
         super().__init__()
 
         self.observation_dim = observation_dim
@@ -15,7 +15,7 @@ class DistributionalActorCritic(nn.Module):
         self.alpha_cvar = alpha_cvar
 
         # number of quantiles in CVAR tail
-        self.num_tails = max(3, int(alpha_cvar * num_quantiles))
+        self.num_tails = max(1, int(alpha_cvar * num_quantiles))
 
         tau = torch.FloatTensor([
             (2 * i - 1) / (2 * num_quantiles) for i in range(1, num_quantiles + 1)

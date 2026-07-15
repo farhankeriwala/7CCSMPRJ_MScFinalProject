@@ -111,7 +111,7 @@ def cvar_advantage(
     # Sort quantiles ascending — lowest = worst outcomes = left tail
     sorted_q, _ = torch.sort(quantiles, dim=-1)   # (batch, N)
 
-    # CVaR = mean of num_tail lowest quantiles
+    # CVaR = mean of n_tail lowest quantiles
     cvar = sorted_q[:, :num_tail].mean(dim=-1)       # (batch,)
 
     # Advantage = return - CVaR baseline
