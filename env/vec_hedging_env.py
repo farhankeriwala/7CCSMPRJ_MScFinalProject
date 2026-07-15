@@ -124,7 +124,7 @@ class VecHedgingEnv:
         delta_change = np.abs(actions - self.prev_delta)
         transaction_cost = self.transaction_cost * delta_change.sum(axis=1) * S_t
 
-        rewards = (pnl - transaction_cost).astype(np.float32)
+        rewards = ((pnl - transaction_cost)/10.0).astype(np.float32)
 
         self.prev_delta = actions.copy()
         self.t += 1

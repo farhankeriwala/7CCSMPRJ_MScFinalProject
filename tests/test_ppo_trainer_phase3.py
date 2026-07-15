@@ -15,8 +15,8 @@ def trainer():
         observation_dim      = env.observations_dim,
         action_dim      = env.actions_dim,
         hidden_dim   = 64,
-        num_quantiles  = 32,
-        alpha_cvar   = 0.05,
+        num_quantiles  = 51,
+        alpha_cvar   = 0.1,
     )
 
     trainer = CvarPPOTrainer(
