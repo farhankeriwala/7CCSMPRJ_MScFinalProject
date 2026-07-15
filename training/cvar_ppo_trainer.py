@@ -44,7 +44,8 @@ class CvarPPOTrainer:
         self.optimizer_critic = Adam(
             net.critic_head.parameters(),
             lr=lr * 10,  # 3e-4 — faster critic learning
-        )        N = env.N
+        )
+        N = env.N
         observation_dim = env.observations_dim
         action_dim = env.actions_dim
         N_num_quantiles = net.num_quantiles
