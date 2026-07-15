@@ -16,7 +16,6 @@ def plot_training_curves(
 ):
     """
     Plot training curves with curriculum stage boundaries marked.
-
     stage_boundaries: list of episode counts where each stage ends
     """
     returns_arr = np.array(all_returns)
@@ -101,9 +100,9 @@ def run_phase3(rho: float = 0.5):
     Full Phase 3 training run with curriculum learning.
 
     Curriculum stages:
-        Stage 1: λ=0.5  — easy, few jumps    — 50,000 episodes
-        Stage 2: λ=1.0  — medium             — 50,000 episodes
-        Stage 3: λ=1.5  — target calibration — 50,000 episodes
+        Stage 1: λ=0.5  — easy, few jumps    — 150,000 episodes
+        Stage 2: λ=1.0  — medium             — 150,000 episodes
+        Stage 3: λ=1.5  — target calibration — 150,000 episodes
 
     Actor weights are retained across stages.
     Critic is reinitialised at each stage transition to avoid
@@ -117,34 +116,34 @@ def run_phase3(rho: float = 0.5):
     os.makedirs("plots",   exist_ok=True)
 
     # ------------------------------------------------------------------
-    # Environment — lam_override controls curriculum stage
+    # Environment
     # ------------------------------------------------------------------
     env = VecHedgingEnv(
-        N             = 256,
-        S0            = 100.0,
-        K             = 100.0,
-        B             = 75.0,
-        r             = 0.05,
-        sigma         = 0.20,
-        lam           = 1.5,       # base lam — overridden per stage
-        mu_J          = -0.04,
-        sigma_J       = 0.08,
-        T             = 1.0,
-        num_steps     = 50,
+        N                = 256,
+        S0               = 100.0,
+        K                = 100.0,
+        B                = 75.0,
+        r                = 0.05,
+        sigma            = 0.20,
+        lam              = 1.5,
+        mu_J             = -0.04,
+        sigma_J          = 0.08,
+        T                = 1.0,
+        num_steps        = 50,
         transaction_cost = 0.001,
-        rho           = rho,       # sentiment signal quality
-        lam_override  = 0.5,       # start at easy stage
+        rho              = rho,
+        lam_override     = 0.5,    # start at easy stage
     )
 
     # ------------------------------------------------------------------
-    # Network
+    # Network — use your actual parameter names
     # ------------------------------------------------------------------
     net = DistributionalActorCritic(
-        observation_dim      = env.observations_dim,
+        observation_dim = env.observations_dim,
         action_dim      = env.actions_dim,
-        hidden_dim   = 64,
-        num_quantiles  = 32,
-        alpha_cvar   = 0.05,
+        hidden_dim      = 64,
+        num_quantiles   = 32,
+        alpha_cvar      = 0.05,
     )
 
     # ------------------------------------------------------------------
@@ -158,9 +157,9 @@ def run_phase3(rho: float = 0.5):
             gamma         = 1.0,
             gae_lambda    = 0.95,
             epsilon_clip  = 0.2,
-            c_val       = 1.0,
+            c_val         = 1.0,
             c_entropy     = 0.01,
-            num_epochs      = 10,
+            num_epochs    = 10,
             batch_size    = 64,
             rollout_steps = 2048,
             kappa         = 1.0,
@@ -171,8 +170,8 @@ def run_phase3(rho: float = 0.5):
     # ------------------------------------------------------------------
     # Curriculum training
     # ------------------------------------------------------------------
-    all_returns       = []
-    stage_boundaries  = []
+    all_returns      = []
+    stage_boundaries = []
 
     print("\n" + "="*60)
     print(f"  Phase 3 — CVaR-PPO with Curriculum  (ρ={rho})")
@@ -181,7 +180,7 @@ def run_phase3(rho: float = 0.5):
     # Stage 1 — λ=0.5
     print("\nStage 1: λ=0.5 (easy)")
     env.set_lam_override(0.5)
-    returns_1 = trainer.train(total_ep=50_000, stage_name="λ=0.5")
+    returns_1 = trainer.train(total_episodes=150_000, stage_name="λ=0.5")
     all_returns.extend(returns_1)
     stage_boundaries.append(len(all_returns))
 
@@ -192,7 +191,7 @@ def run_phase3(rho: float = 0.5):
     # Stage 2 — λ=1.0
     print("\nStage 2: λ=1.0 (medium)")
     env.set_lam_override(1.0)
-    returns_2 = trainer.train(total_ep=50_000, stage_name="λ=1.0")
+    returns_2 = trainer.train(total_episodes=150_000, stage_name="λ=1.0")
     all_returns.extend(returns_2)
     stage_boundaries.append(len(all_returns))
 
@@ -203,13 +202,13 @@ def run_phase3(rho: float = 0.5):
     # Stage 3 — λ=1.5 (target)
     print("\nStage 3: λ=1.5 (target)")
     env.set_lam_override(1.5)
-    returns_3 = trainer.train(total_ep=50_000, stage_name="λ=1.5")
+    returns_3 = trainer.train(total_episodes=150_000, stage_name="λ=1.5")
     all_returns.extend(returns_3)
 
     # ------------------------------------------------------------------
     # Save results
     # ------------------------------------------------------------------
-    rho_str = str(rho).replace(".", "")
+    rho_str      = str(rho).replace(".", "")
     model_path   = f"results/phase3_rho{rho_str}.pt"
     returns_path = f"results/returns_phase3_rho{rho_str}.npy"
 
@@ -225,19 +224,29 @@ def run_phase3(rho: float = 0.5):
     plot_training_curves(all_returns, stage_boundaries, rho, plot_path)
 
     # ------------------------------------------------------------------
-    # Final summary
+    # Final summary — safe slice in case fewer than 10k episodes
     # ------------------------------------------------------------------
-    returns_arr   = np.array(all_returns[-10_000:])
+    n_final       = min(10_000, len(all_returns))
+    returns_arr   = np.array(all_returns[-n_final:])
     threshold     = np.quantile(returns_arr, 0.05)
     final_cvar    = float(np.mean(returns_arr[returns_arr <= threshold]))
 
     print("\n" + "="*60)
-    print(f"  Phase 3 Complete (ρ={rho})")
+    print(f"  Phase 3 Complete (ρ={rho}) — Final {n_final:,} Episodes")
     print("="*60)
     print(f"  Mean P&L:  {np.mean(returns_arr):>8.4f}  (BS: -9.00)")
     print(f"  Std P&L:   {np.std(returns_arr):>8.4f}  (BS:  2.49)")
     print(f"  CVaR 5%:   {final_cvar:>8.4f}  (BS: -15.43)")
     print("="*60 + "\n")
+
+    # Colab download helper
+    try:
+        from google.colab import files
+        files.download(model_path)
+        files.download(returns_path)
+        print("Files downloaded via Colab.")
+    except ImportError:
+        pass
 
     return all_returns, net
 
@@ -246,25 +255,16 @@ def _reinit_critic(net: DistributionalActorCritic):
     """
     Reinitialise critic head weights only — actor weights are retained.
 
-    This is the curriculum learning transition mechanism described in
     Bengio et al. (2009): when moving to a harder task, the value
     function must be recalibrated but the policy can transfer.
     """
-    nn_module = net.critic_head
-
-    # Reinitialise with same scheme as original initialisation
-    torch.nn.init.orthogonal_(nn_module.weight, gain=1.0)
-    torch.nn.init.zeros_(nn_module.bias)
-
+    torch.nn.init.orthogonal_(net.critic_head.weight, gain=1.0)
+    torch.nn.init.zeros_(net.critic_head.bias)
     print("Critic head reinitialised — actor weights retained.")
 
 
 if __name__ == "__main__":
-    # Run all three rho values for sentiment ablation
-    # These can be run in parallel on separate Colab notebooks
     import sys
-
     rho = float(sys.argv[1]) if len(sys.argv) > 1 else 0.5
-
     print(f"Running Phase 3 with ρ={rho}")
     run_phase3(rho=rho)
