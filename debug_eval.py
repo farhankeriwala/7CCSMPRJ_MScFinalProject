@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from env.hedging_env import HedgingEnv
-from agent.actor_critic import ActorCritic
+from agent.distributional_actor_critic import DistributionalActorCritic
 
 np.random.seed(42)
 torch.manual_seed(42)
@@ -13,8 +13,14 @@ env = HedgingEnv(
 )
 
 device = torch.device("cpu")
-net = ActorCritic(observation_dim=4, action_dim=2, hidden_dim=64)
-net.load_state_dict(torch.load("results/ppo_phase2.pt", map_location=device))
+net = DistributionalActorCritic(
+    observation_dim = 4,
+    action_dim      = 2,
+    hidden_dim      = 64,
+    num_quantiles   = 32,
+    alpha_cvar      = 0.05,
+)
+net.load_state_dict(torch.load("results/phase3_rho00.pt", map_location=device))
 net.eval()
 
 obs, _ = env.reset()
